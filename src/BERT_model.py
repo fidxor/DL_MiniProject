@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from torch import nn
+from torch.optim import Adam
 from transformers import BertModel
 from transformers import BertTokenizer
 
@@ -64,5 +65,45 @@ class BertClassifier(nn.Module):
         linear_output = self.linear(dropout_output)
         final_layer = self.relu(linear_output)
 
-        return final_layer   
+        return final_layer
+           
+def Get_Device(model):
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+
+    if use_cuda:
+
+        model = model.cuda()
+
+    return device
         
+def Get_Device_Optimizer(model, learning_rate):
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = Adam(model.parameters(), lr= learning_rate)
+
+    if use_cuda:
+
+            model = model.cuda()
+            criterion = criterion.cuda()
+
+    return device, criterion, optimizer
+
+def GetModelOutput(model, input, label, device):
+    label = label.to(device)
+    mask = input['attention_mask'].to(device)
+    input_id = input['input_ids'].squeeze(1).to(device)
+
+    output = model(input_id, mask)
+
+    return output
+
+
+def Get_Total_Accuracy(modelOutput, label):
+    total_accuracy = 0
+    acc = (modelOutput.argmax(dim = 1) == label).sum().item()
+    total_accuracy += acc
+
+    return total_accuracy
