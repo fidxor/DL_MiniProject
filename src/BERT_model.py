@@ -5,7 +5,7 @@ from torch.optim import Adam
 from transformers import BertModel
 from transformers import BertTokenizer
 
-__all__ = ['Dataset', 'BertClassifier']
+__all__ = ['Dataset', 'BertClassifier', 'EarlyStopping']
 
 tokenizer = BertTokenizer.from_pretrained('bert-large-uncased')
 
@@ -66,7 +66,31 @@ class BertClassifier(nn.Module):
         final_layer = self.relu(linear_output)
 
         return final_layer
-           
+    
+class EarlyStopping:
+    def __init__(self, patience = 3, verbose = True, delta = 0):
+        self.patience = patience
+        self.verbose = verbose
+        self.counter = 0
+        self.best_score = None
+        self.early_stop = False
+        self.val_loss_min = np.longfloat
+        self.delta = delta        
+
+    def __call__(self, val_loss):
+        score = -val_loss
+
+        if self.best_score is None:
+            self.best_score = score            
+        elif score < self.best_score + self.delta:
+            self.counter += 1
+            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            self.best_score = score            
+            self.counter = 0    
+
 def Get_Device(model):
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
