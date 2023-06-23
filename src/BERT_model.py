@@ -107,3 +107,10 @@ def Get_Total_Accuracy(modelOutput, label):
     total_accuracy += acc
 
     return total_accuracy
+
+def Get_Total_Loss(output, criterion, label):
+    total_loss_train = 0
+    batch_loss = criterion(output, label.long())
+    total_loss_train += batch_loss.item()
+
+    return total_loss_train, batch_loss
